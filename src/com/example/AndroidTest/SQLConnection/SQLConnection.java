@@ -150,8 +150,86 @@ public class SQLConnection {
     }
 
 
+    public void updateDataPak (String dataPakId, String dataPakUsed) {
+        String sqlStr = DATAOPERATION.UPDATE.toString() + " " + TABLE_NAMES.month_specific.toString() +
+                " SET " + MONTH_SPECIFIC.datapak_used.toString() + "='" + dataPakUsed +
+                "' WHERE " + MONTH_SPECIFIC._id.toString() + "='" + dataPakId + "'";
+        sqLiteDatabase.execSQL(sqlStr);
+    }
+
+    public void modifyDataPak (DataPakBean dataPakBean) {
+        String sqlStr = DATAOPERATION.UPDATE.toString() + " " + TABLE_NAMES.month_specific.toString() +
+                " SET " + MONTH_SPECIFIC.datapak_name.toString() + "='" + dataPakBean.getDataPakUsed() + "'," +
+                MONTH_SPECIFIC.datapak_start.toString() + "='" + dataPakBean.getDataPakStart() + "'," +
+                MONTH_SPECIFIC.datapak_end.toString()  + "='" + dataPakBean.getDataPakEnd() + "'," +
+                MONTH_SPECIFIC.datapak_sum.toString() + "='" + dataPakBean.getDataPakSum() + "'," +
+                MONTH_SPECIFIC.datapak_used.toString() + "='" + dataPakBean.getDataPakUsed() + "'," +
+                MONTH_SPECIFIC.datapak_is_daily.toString() + "='" + dataPakBean.getIsDataPakDaily() + "'," +
+                MONTH_SPECIFIC.datapak_is_monthly.toString() + "='" + dataPakBean.getIsDataPakMonthly() + "'," +
+                MONTH_SPECIFIC.datapak_specified_app.toString() + "='" + dataPakBean.getDataPakSpecifiedApp() + "' WHERE " +
+                MONTH_SPECIFIC._id.toString() + "='" + dataPakBean.getId() + "'";
+        sqLiteDatabase.execSQL(sqlStr);
+    }
+
+    public void deleteDataPak (String dataPakId) {
+        String sqlStr = DATAOPERATION.DELETE.toString() + " FROM " + TABLE_NAMES.month_specific.toString() + " WHERE " + MONTH_SPECIFIC._id.toString() + "='" + dataPakId + "'";
+        sqLiteDatabase.execSQL(sqlStr);
+    }
+
+    public void deleteFolder (String folderId) {
+        String sqlStr = DATAOPERATION.DELETE.toString() + " FROM " + TABLE_NAMES.months_amount.toString() + " WHERE " + MONTHS_AMOUNT._id.toString() + "='" + folderId + "'";
+        sqLiteDatabase.execSQL(sqlStr);
+        sqlStr = DATAOPERATION.DELETE.toString() + " FROM " + TABLE_NAMES.month_specific.toString() + " WHERE " + MONTH_SPECIFIC.months_amount__id.toString() + "='" + folderId + "'";
+        sqLiteDatabase.execSQL(sqlStr);
+    }
+
     public void insertNewDataPak(DataPakBean dataPakBean) {
-        Cursor cursor = sqLiteDatabase.query(false,TABLE_NAMES.months_amount.toString(),new String[]{"*"}," WHERE ");
+        Cursor cursor = sqLiteDatabase.query(false,TABLE_NAMES.months_amount.toString(),new String[]{"*"},
+                " WHERE " + MONTHS_AMOUNT.year.toString() + "='" + dataPakBean.getYear() + "' AND " +
+                MONTHS_AMOUNT.month.toString() + "='" + dataPakBean.getMonth() + "'",
+                null,null,null,null,null);
+        String sqlStr = null;
+        if (!cursor.moveToNext()) {
+            sqlStr = DATAOPERATION.INSERT.toString() + " INTO " + TABLE_NAMES.months_amount.toString() + "(" +
+                    MONTHS_AMOUNT.month.toString() + "," +
+                    MONTHS_AMOUNT.year.toString() + "," +
+                    MONTHS_AMOUNT.datapack_amount.toString() + ")" +
+                    " VALUES (" + "'" +
+                    dataPakBean.getMonth() + "','" +
+                    dataPakBean.getYear() + "','" +
+                    "'1'" + ")";
+            sqLiteDatabase.execSQL(sqlStr);
+            cursor.close();
+            cursor = sqLiteDatabase.query(false,TABLE_NAMES.months_amount.toString(),new String[]{MONTHS_AMOUNT._id.toString()},
+                    " WHERE " + MONTHS_AMOUNT.year.toString() + "='" + dataPakBean.getYear() + "' AND " +
+                            MONTHS_AMOUNT.month.toString() + "='" + dataPakBean.getMonth() + "'",
+                    null,null,null,null,null);
+            cursor.moveToNext();
+
+        }
+        sqlStr = DATAOPERATION.INSERT.toString() + " INTO " + TABLE_NAMES.month_specific.toString() + "(" +
+                MONTH_SPECIFIC.months_amount__id.toString() + "," +
+                MONTH_SPECIFIC.datapak_name.toString() + "," +
+                MONTH_SPECIFIC.datapak_start.toString() + "," +
+                MONTH_SPECIFIC.datapak_end.toString() + "," +
+                MONTH_SPECIFIC.datapak_sum.toString() + "," +
+                MONTH_SPECIFIC.datapak_used.toString() + "," +
+                MONTH_SPECIFIC.datapak_specified_app.toString() + "," +
+                MONTH_SPECIFIC.datapak_is_daily.toString() + "," +
+                MONTH_SPECIFIC.datapak_is_monthly.toString() + ")" +
+                " VALUES(" +
+                cursor.getString(cursor.getColumnIndex(MONTHS_AMOUNT._id.toString())) + "," +
+                dataPakBean.getDataPakName() + "," +
+                dataPakBean.getDataPakStart() + "," +
+                dataPakBean.getDataPakEnd() + "," +
+                dataPakBean.getDataPakSum() + "," +
+                dataPakBean.getDataPakUsed() + "," +
+                dataPakBean.getDataPakSpecifiedApp() + "," +
+                dataPakBean.getIsDataPakDaily() + "," +
+                dataPakBean.getIsDataPakMonthly() + "," + ")";
+
+        sqLiteDatabase.execSQL(sqlStr);
+
     }
 
 
